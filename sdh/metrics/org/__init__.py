@@ -67,32 +67,38 @@ def get_last_path_from_url(url):
 
 @st.query([
     '?oh org:hasProduct ?prod',
+    '?prod org:id ?prid',
     '?oh org:membership ?_mmb',
     '?_mmb org:member ?mem',
     '?mem org:id ?mid',
     '?_mmb org:position ?_pos',
-    '?_pos rdfs:label ?pos',
+    '?_pos rdfs:label ?pos'
 ])
 def add_org_and_pos(arg):
-    org = transform_host_and_save_it(arg.get('oh'))
-    prod = transform_host_and_save_it(arg.get('prod'))
-    mem = transform_host_and_save_it(arg.get('mem'))
+    org = arg.get('oh')
+    prod = arg.get('prod')
+    mem = arg.get('mem')
+    prid = arg.get('prid')
     pos = str(arg.get('pos')).lower()
     st.execute('sadd', org + ':p:', prod)
     st.execute('sadd', org + ':m:' + pos, mem)
     st.execute('hset', mem, 'id', arg.get('mid'))
+    st.execute('set', prod, prid)
 
 
 @st.query([
     '?prod org:relatesToProject ?prj',
+    '?prj org:id ?prjid',
     '?prj doap:repository ?rep',
     '?prj org:affiliation ?_aff',
     '?_aff org:affiliate ?mem'
 ])
 def add_repositories_org(arg):
-    prod = transform_host_and_save_it(arg.get("prod"))
-    prj = transform_host_and_save_it(arg.get("prj"))
-    mem = transform_host_and_save_it(arg.get('mem'))
+    prod = arg.get("prod")
+    prj = arg.get("prj")
+    mem = arg.get('mem')
+    prjid = arg.get('prjid')
+    st.execute('set', prj, prjid)
     st.execute('sadd', prod + ':p:', prj)
     st.execute('sadd', prj + ':p:', prod)
     repo_name = get_last_path_from_url(arg.get('rep'))
@@ -110,30 +116,24 @@ def add_repositories_org(arg):
 
 @st.collect('?r scm:repositoryId ?rid')
 def add_repository((r, _, rid)):
-    repo_url = transform_host_and_save_it(r)
-    st.execute('hset', repo_url, "id", rid.toPython())
+    st.execute('hset', r, "id", rid.toPython())
 
 
 @st.collect('?r doap:name ?name')
 def add_repository_name((r, _, name)):
-    repo_url = transform_host_and_save_it(r)
     prj = st.db.hget('tmp-rep', name.toPython())
     st.db.hdel('tmp-rep', name)
-    st.execute('hset', repo_url, "name", name)
-    st.execute('sadd', prj + ':r:', repo_url)
+    st.execute('hset', r, "name", name)
+    st.execute('sadd', prj + ':r:', r)
 
 
 @st.collect('?r scm:firstCommit ?fc')
 def add_repository_first_commit_info((r, _, fc)):
-    repo_url = transform_host_and_save_it(r)
     timestamp = calendar.timegm(fc.toPython().timetuple())
-    st.execute('zadd', 'frag:std-r-fc', timestamp, repo_url)
-    st.execute('hset', repo_url, "first_commit", timestamp)
+    st.execute('hset', r, "first_commit", timestamp)
 
 
 @st.collect('?r scm:lastCommit ?lc')
 def add_repository_last_commit_info((r, _, lc)):
-    repo_url = transform_host_and_save_it(r)
     timestamp = calendar.timegm(lc.toPython().timetuple())
-    st.execute('zadd', 'frag:std-r-lc', timestamp, repo_url)
-    st.execute('hset', repo_url, "last_commit", timestamp)
+    st.execute('hset', r, "last_commit", timestamp)

@@ -37,14 +37,16 @@ def get_correct_kwargs(kwargs):
         'begin': 0 if kwargs.get('begin') is None else kwargs.get('begin'),
         'end': calendar.timegm(datetime.now().timetuple())
         if kwargs.get('end') is None else kwargs.get('end'),
-        'max': kwargs.get('max')
+        'max': 0 if kwargs.get('max') is None else kwargs.get('max')
     }
-    args['step'] = (args.get('end') - args.get('begin')) / args.get('max')
+    if args['max'] == 0:
+        args['step'] = 86400
+    else:
+        args['step'] = (args.get('end') - args.get('begin')) / args.get('max')
     return args
 
 
 def detect_overlap_date(a_begin, a_end, b_begin, b_end):
-    print ""
     return (
         (int(a_begin) <= int(b_begin)) and (int(a_end) >= int(b_end))  # contains
     ) or (
@@ -57,77 +59,137 @@ def detect_overlap_date(a_begin, a_end, b_begin, b_end):
 def get_position_projects(uid, args, position, flag_total):
     positions_id = store.get_all_members_id(position)
     if uid not in positions_id:
-        return args, []
+        return []
     else:
         projects = store.get_all_member_projects(positions_id[uid])
-        if flag_total:
-            return projects
-        else:
+        if not flag_total:
             res_prj = set()
             for x in projects:
+                flag_do = False
                 res_tmp = store.get_all_project_repositories(x)
-                flag_do = True
                 for k in res_tmp:
                     rep_info = store.db.hgetall(k)
-                    if not detect_overlap_date(
+                    if detect_overlap_date(
                         args.get('begin'), args.get('end'),
                         rep_info.get('first_commit'), rep_info.get('last_commit')
                     ):
-                        flag_do = False
+                        flag_do = True
+                        break
                 if flag_do:
                     res_prj.add(x)
-            return list(res_prj)
-
-
-def get_position_products(uid, args, position, flag_total):
-    positions_id = store.get_all_members_id(position)
-    if uid not in positions_id:
-        return args, []
-    else:
-        pr = get_position_projects(uid, args, position, flag_total)
-        res = set()
-        for x in pr:
-            res = res.union(set(store.get_all_project_products(x)))
+            projects = list(res_prj)
+        res = []
+        [res.append({
+            'id': store.db.get(x),
+            'uri': x
+        }) for x in projects]
         return res
 
 
-@app.metric('/total-director-projects', parameters=[ORG.Person], id='director-projects', title='Projects')
+def get_position_products(uid, args, position, flag_total):
+    pr = get_position_projects(uid, args, position, flag_total)
+    pro = set()
+    res = []
+    for x in pr:
+        pro = pro.union(set(store.get_all_project_products(x.get('uri'))))
+    [res.append({
+        'id': store.db.get(x),
+        'uri': x
+    }) for x in pro]
+    return res
+
+
+@app.metric('/total-director-projects', parameters=[ORG.Person],
+            id='director-projects', title='Projects')
 def get_total_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_projects(uid, args, 'directors', flag_total))
 
 
-@app.metric('/total-architects-projects', parameters=[ORG.Person], id='architects-projects', title='Projects')
+@app.view('/director-projects', target=[ORG.Project], parameters=[ORG.Person],
+          id='director-projects', title='Products')
+def get_architect_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_projects(uid, args, 'directors', flag_total)
+
+
+@app.metric('/total-architects-projects', parameters=[ORG.Person],
+            id='architects-projects', title='Projects')
 def get_total_architects_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_projects(uid, args, 'architects', flag_total))
 
 
-@app.metric('/total-pmanager-projects', parameters=[ORG.Person], id='pmanager-projects', title='Projects')
+@app.view('/architects-projects', target=[ORG.Project], parameters=[ORG.Person],
+          id='architects-projects', title='Products')
+def get_architect_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_projects(uid, args, 'architects', flag_total)
+
+
+@app.metric('/total-pmanager-projects', parameters=[ORG.Person],
+            id='pmanager-projects', title='Projects')
 def get_total_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_projects(uid, args, 'productmanagers', flag_total))
 
 
-@app.metric('/total-director-products', parameters=[ORG.Person], id='director-products', title='Products')
+@app.view('/pmanager-projects', target=[ORG.Project], parameters=[ORG.Person],
+          id='pmanager-projects', title='Products')
+def get_manager_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_projects(uid, args, 'productmanagers', flag_total)
+
+
+@app.metric('/total-director-products', parameters=[ORG.Person],
+            id='director-products', title='Products')
 def get_total_director_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_products(uid, args, 'directors', flag_total))
 
 
-@app.metric('/total-architects-products', parameters=[ORG.Person], id='architects-products', title='Products')
+@app.view('/director-products', target=[ORG.Product], parameters=[ORG.Person],
+          id='director-products', title='Products')
+def get_director_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_products(uid, args, 'directors', flag_total)
+
+
+@app.metric('/total-architects-products', parameters=[ORG.Person],
+            id='architects-products', title='Products')
 def get_total_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_products(uid, args, 'architects', flag_total))
 
 
-@app.metric('/total-pmanager-products', parameters=[ORG.Person], id='pmanager-products', title='Products')
+@app.view('/architects-products', target=[ORG.Product], parameters=[ORG.Person],
+          id='architects-products', title='Products')
+def get_architect_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_products(uid, args, 'architects', flag_total)
+
+
+@app.metric('/total-pmanager-products', parameters=[ORG.Person],
+            id='pmanager-products', title='Products')
 def get_total_manager_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_products(uid, args, 'productmanagers', flag_total))
+
+
+@app.view('/pmanager-products', target=[ORG.Product], parameters=[ORG.Person],
+          id='pmanager-products', title='Products')
+def get_manager_products(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_products(uid, args, 'productmanagers', flag_total)
