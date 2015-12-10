@@ -109,7 +109,7 @@ def get_total_director_projects(uid, **kwargs):
 
 @app.view('/director-projects', target=[ORG.Project], parameters=[ORG.Person],
           id='director-projects', title='Products')
-def get_architect_products(uid, **kwargs):
+def get_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, get_position_projects(uid, args, 'directors', flag_total)
@@ -125,7 +125,7 @@ def get_total_architects_projects(uid, **kwargs):
 
 @app.view('/architects-projects', target=[ORG.Project], parameters=[ORG.Person],
           id='architects-projects', title='Products')
-def get_architect_products(uid, **kwargs):
+def get_architect_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, get_position_projects(uid, args, 'architects', flag_total)
@@ -141,7 +141,7 @@ def get_total_manager_projects(uid, **kwargs):
 
 @app.view('/pmanager-projects', target=[ORG.Project], parameters=[ORG.Person],
           id='pmanager-projects', title='Products')
-def get_manager_products(uid, **kwargs):
+def get_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, get_position_projects(uid, args, 'productmanagers', flag_total)
