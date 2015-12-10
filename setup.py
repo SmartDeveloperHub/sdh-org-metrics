@@ -28,7 +28,7 @@ __author__ = 'Alejandro F. Carrera'
 
 setup(
     name="SDH-ORG-Metrics",
-    version="0.2.1.alpha",
+    version="0.3.1.alpha",
     author="Alejandro F. Carrera",
     author_email="alej4fc@gmail.com",
     description="A service that calculates a small set of quantitative metrics on data from Organization.",
