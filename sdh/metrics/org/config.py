@@ -53,16 +53,16 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    DEBUG = False
+    DEBUG = True
     LOG = logging.DEBUG
     PROVIDER = _broker_conf('localhost', 5672)
     PROVIDER.update(_agora_conf('localhost', 9009))
-    REDIS = _redis_conf('localhost', 6, 6379)
+    REDIS = _redis_conf('localhost', 7, 6379)
 
 
 class ProductionConfig(Config):
     DEBUG = False
-    LOG = logging.INFO
+    LOG = logging.DEBUG
     PROVIDER = _broker_conf('localhost', 5672)
     PROVIDER.update(_agora_conf('localhost', 9009))
-    REDIS = _redis_conf('localhost', 6, 6379)
+    REDIS = _redis_conf('localhost', 7, 6379)
