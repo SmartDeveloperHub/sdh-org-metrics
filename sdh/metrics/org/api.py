@@ -125,7 +125,7 @@ def get_total_director_projects(uid, **kwargs):
     return args, len(get_position_projects(uid, args, 'directors', flag_total, False))
 
 
-@app.view('/director-projects', target=[ORG.Project], parameters=[ORG.Person],
+@app.view('/director-projects', target=ORG.Project, parameters=[ORG.Person],
           id='director-projects', title='Projects')
 def get_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -141,7 +141,7 @@ def get_total_architects_projects(uid, **kwargs):
     return args, len(get_position_projects(uid, args, 'architects', flag_total, False))
 
 
-@app.view('/architects-projects', target=[ORG.Project], parameters=[ORG.Person],
+@app.view('/architects-projects', target=ORG.Project, parameters=[ORG.Person],
           id='architects-projects', title='Projects')
 def get_architect_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -157,7 +157,7 @@ def get_total_manager_projects(uid, **kwargs):
     return args, len(get_position_projects(uid, args, 'productmanagers', flag_total, False))
 
 
-@app.view('/pmanager-projects', target=[ORG.Project], parameters=[ORG.Person],
+@app.view('/pmanager-projects', target=ORG.Project, parameters=[ORG.Person],
           id='pmanager-projects', title='Projects')
 def get_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -175,7 +175,7 @@ def get_total_developer_projects(uid, **kwargs):
 
 
 # TODO: Vista de projects en los que colabora un developer
-@app.view('/developer-projects', target=[ORG.Product], parameters=[ORG.Person],
+@app.view('/developer-projects', target=ORG.Product, parameters=[ORG.Person],
           id='developer-projects', title='Projects')
 def get_developer_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -191,7 +191,7 @@ def get_total_director_products(uid, **kwargs):
     return args, len(get_position_products(uid, args, 'directors', flag_total))
 
 
-@app.view('/director-products', target=[ORG.Product], parameters=[ORG.Person],
+@app.view('/director-products', target=ORG.Product, parameters=[ORG.Person],
           id='director-products', title='Products')
 def get_director_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -207,7 +207,7 @@ def get_total_architect_products(uid, **kwargs):
     return args, len(get_position_products(uid, args, 'architects', flag_total))
 
 
-@app.view('/architects-products', target=[ORG.Product], parameters=[ORG.Person],
+@app.view('/architects-products', target=ORG.Product, parameters=[ORG.Person],
           id='architects-products', title='Products')
 def get_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -223,7 +223,7 @@ def get_total_manager_products(uid, **kwargs):
     return args, len(get_position_products(uid, args, 'productmanagers', flag_total))
 
 
-@app.view('/pmanager-products', target=[ORG.Product], parameters=[ORG.Person],
+@app.view('/pmanager-products', target=ORG.Product, parameters=[ORG.Person],
           id='pmanager-products', title='Products')
 def get_manager_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -241,7 +241,7 @@ def get_total_developer_products(uid, **kwargs):
 
 
 # TODO: Vista de products en los que colabora un developer
-@app.view('/developer-products', target=[ORG.Product], parameters=[ORG.Person],
+@app.view('/developer-products', target=ORG.Product, parameters=[ORG.Person],
           id='developer-products', title='Products')
 def get_developer_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -249,7 +249,7 @@ def get_developer_products(uid, **kwargs):
     return args, []
 
 
-@app.view('/director-productmanagers', target=[ORG.Person], parameters=[ORG.Person],
+@app.view('/director-productmanagers', target=ORG.Person, parameters=[ORG.Person],
           id='director-productmanagers', title='Director Managers')
 def get_director_pmanagers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -257,7 +257,7 @@ def get_director_pmanagers(uid, **kwargs):
     return args, get_director_position(uid, args, 'productmanagers', flag_total)
 
 
-@app.view('/director-architects', target=[ORG.Person], parameters=[ORG.Person],
+@app.view('/director-architects', target=ORG.Person, parameters=[ORG.Person],
           id='director-architects', title='Director Architects')
 def get_director_architects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -265,7 +265,7 @@ def get_director_architects(uid, **kwargs):
     return args, get_director_position(uid, args, 'architects', flag_total)
 
 
-@app.view('/director-developers', target=[ORG.Person], parameters=[ORG.Person],
+@app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
           id='director-developers', title='Director Developers')
 def get_director_developers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
