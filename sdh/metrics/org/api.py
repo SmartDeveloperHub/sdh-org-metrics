@@ -231,24 +231,6 @@ def get_manager_products(uid, **kwargs):
     return args, get_position_products(uid, args, 'productmanagers', flag_total)
 
 
-# TODO: Metrica de products en los que colabora un developer
-@app.metric('/developer-products', parameters=[ORG.Person],
-            id='developer-products', title='Products')
-def get_total_developer_products(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, 0
-
-
-# TODO: Vista de products en los que colabora un developer
-@app.view('/developer-products', target=ORG.Product, parameters=[ORG.Person],
-          id='developer-products', title='Products')
-def get_developer_products(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, []
-
-
 @app.view('/director-productmanagers', target=ORG.Person, parameters=[ORG.Person],
           id='director-productmanagers', title='Director Managers')
 def get_director_pmanagers(uid, **kwargs):
@@ -270,4 +252,17 @@ def get_director_architects(uid, **kwargs):
 def get_director_developers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, get_director_position(uid, args, 'developers', flag_total)
+    try:
+        res = set()
+        pr = get_position_products(uid, args, 'directors', flag_total)
+        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
+        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
+        res_devs = []
+        [res_devs.append({
+            "id": store.db.hgetall(x).get("id"),
+            "uri": x
+        }) for x in res]
+        return args, res_devs
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
