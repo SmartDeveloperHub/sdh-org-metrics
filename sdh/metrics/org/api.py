@@ -120,7 +120,7 @@ def get_director_position(uid, args, position, flag_total):
 
 
 @app.view('/product-projects', target=ORG.Project, parameters=[ORG.Product],
-          id='product-projects', title='Projects')
+          id='product-projects', title='Projects of Product')
 def get_product_projects(prid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -144,7 +144,7 @@ def get_product_projects(prid, **kwargs):
 
 
 @app.view('/project-repositories', target=SCM.Repository, parameters=[ORG.Project],
-          id='project-repositories', title='Projects')
+          id='project-repositories', title='Repositories of Project')
 def get_project_repositories(pjid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -172,7 +172,7 @@ def get_project_repositories(pjid, **kwargs):
 
 
 @app.metric('/total-director-projects', parameters=[ORG.Person],
-            id='director-projects', title='Projects')
+            id='director-projects', title='Projects of Director')
 def get_total_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -180,7 +180,7 @@ def get_total_director_projects(uid, **kwargs):
 
 
 @app.view('/director-projects', target=ORG.Project, parameters=[ORG.Person],
-          id='director-projects', title='Projects')
+          id='director-projects', title='Projects of Director')
 def get_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -188,7 +188,7 @@ def get_director_projects(uid, **kwargs):
 
 
 @app.metric('/total-architect-projects', parameters=[ORG.Person],
-            id='architect-projects', title='Projects')
+            id='architect-projects', title='Projects of Architect')
 def get_total_architects_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -196,7 +196,7 @@ def get_total_architects_projects(uid, **kwargs):
 
 
 @app.view('/architect-projects', target=ORG.Project, parameters=[ORG.Person],
-          id='architect-projects', title='Projects')
+          id='architect-projects', title='Projects of Architect')
 def get_architect_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -204,7 +204,7 @@ def get_architect_projects(uid, **kwargs):
 
 
 @app.metric('/total-pmanager-projects', parameters=[ORG.Person],
-            id='pmanager-projects', title='Projects')
+            id='pmanager-projects', title='Projects of Product Manager')
 def get_total_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -212,7 +212,7 @@ def get_total_manager_projects(uid, **kwargs):
 
 
 @app.view('/pmanager-projects', target=ORG.Project, parameters=[ORG.Person],
-          id='pmanager-projects', title='Projects')
+          id='pmanager-projects', title='Projects of Product Manager')
 def get_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -220,7 +220,7 @@ def get_manager_projects(uid, **kwargs):
 
 
 @app.metric('/total-director-products', parameters=[ORG.Person],
-            id='director-products', title='Products')
+            id='director-products', title='Products of Director')
 def get_total_director_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -228,7 +228,7 @@ def get_total_director_products(uid, **kwargs):
 
 
 @app.view('/director-products', target=ORG.Product, parameters=[ORG.Person],
-          id='director-products', title='Products')
+          id='director-products', title='Products of Director')
 def get_director_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -236,7 +236,7 @@ def get_director_products(uid, **kwargs):
 
 
 @app.metric('/total-architect-products', parameters=[ORG.Person],
-            id='architects-products', title='Products')
+            id='architects-products', title='Products of Architect')
 def get_total_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -244,7 +244,7 @@ def get_total_architect_products(uid, **kwargs):
 
 
 @app.view('/architect-products', target=ORG.Product, parameters=[ORG.Person],
-          id='architects-products', title='Products')
+          id='architects-products', title='Products of Architect')
 def get_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -252,7 +252,7 @@ def get_architect_products(uid, **kwargs):
 
 
 @app.metric('/total-pmanager-products', parameters=[ORG.Person],
-            id='pmanager-products', title='Products')
+            id='pmanager-products', title='Products of Product Manager')
 def get_total_manager_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -260,7 +260,7 @@ def get_total_manager_products(uid, **kwargs):
 
 
 @app.view('/pmanager-products', target=ORG.Product, parameters=[ORG.Person],
-          id='pmanager-products', title='Products')
+          id='pmanager-products', title='Products of Product Manager')
 def get_manager_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -268,7 +268,7 @@ def get_manager_products(uid, **kwargs):
 
 
 @app.view('/director-productmanagers', target=ORG.Person, parameters=[ORG.Person],
-          id='director-productmanagers', title='Director Managers')
+          id='director-productmanagers', title='Product Managers of Director')
 def get_director_pmanagers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -276,7 +276,7 @@ def get_director_pmanagers(uid, **kwargs):
 
 
 @app.view('/director-architects', target=ORG.Person, parameters=[ORG.Person],
-          id='director-architects', title='Director Architects')
+          id='director-architects', title='Architects of Director')
 def get_director_architects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -284,13 +284,34 @@ def get_director_architects(uid, **kwargs):
 
 
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
-          id='director-developers', title='Director Developers')
+          id='director-developers', title='Developers of Director')
 def get_director_developers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     try:
         res = set()
         pr = get_position_products(uid, args, 'directors', flag_total)
+        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
+        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
+        res_devs = []
+        [res_devs.append({
+            "id": store.db.hgetall(x).get("id"),
+            "uri": x
+        }) for x in res]
+        return args, res_devs
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
+
+
+@app.view('/pmanager-developers', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-developers', title='Developers of Product Manager')
+def get_pmanager_developers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    try:
+        res = set()
+        pr = get_position_products(uid, args, 'productmanagers', flag_total)
         devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
         [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
         res_devs = []
