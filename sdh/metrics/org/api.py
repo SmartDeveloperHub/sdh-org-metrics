@@ -22,14 +22,12 @@
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 """
 
-__author__ = 'Alejandro F. Carrera'
-
 from sdh.metrics.org import app, st as store
-from sdh.metrics.store.metrics import aggregate, avg, flat_sum
 from sdh.metrics.server import ORG, SCM, CI, APIError
 import calendar
 from datetime import datetime
-import math
+
+__author__ = 'Alejandro F. Carrera'
 
 
 def get_correct_kwargs(kwargs):
@@ -145,7 +143,7 @@ def get_product_projects(prid, **kwargs):
         return args, res
 
 
-@app.view('/project-repositories', target=ORG.Repository, parameters=[ORG.Project],
+@app.view('/project-repositories', target=SCM.Repository, parameters=[ORG.Project],
           id='project-repositories', title='Projects')
 def get_project_repositories(pjid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
