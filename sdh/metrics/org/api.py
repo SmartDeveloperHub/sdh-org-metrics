@@ -22,7 +22,7 @@
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 """
 
-__author__ = 'Fernando Serena'
+__author__ = 'Alejandro F. Carrera'
 
 from sdh.metrics.org import app, st as store
 from sdh.metrics.store.metrics import aggregate, avg, flat_sum
@@ -133,16 +133,16 @@ def get_director_projects(uid, **kwargs):
     return args, get_position_projects(uid, args, 'directors', flag_total, False)
 
 
-@app.metric('/total-architects-projects', parameters=[ORG.Person],
-            id='architects-projects', title='Projects')
+@app.metric('/total-architect-projects', parameters=[ORG.Person],
+            id='architect-projects', title='Projects')
 def get_total_architects_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, len(get_position_projects(uid, args, 'architects', flag_total, False))
 
 
-@app.view('/architects-projects', target=ORG.Project, parameters=[ORG.Person],
-          id='architects-projects', title='Projects')
+@app.view('/architect-projects', target=ORG.Project, parameters=[ORG.Person],
+          id='architect-projects', title='Projects')
 def get_architect_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
@@ -165,24 +165,6 @@ def get_manager_projects(uid, **kwargs):
     return args, get_position_projects(uid, args, 'productmanagers', flag_total, False)
 
 
-# TODO: Metrica de projects en los que colabora un developer
-@app.metric('/developer-projects', parameters=[ORG.Person],
-            id='developer-projects', title='Projects')
-def get_total_developer_projects(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, 0
-
-
-# TODO: Vista de projects en los que colabora un developer
-@app.view('/developer-projects', target=ORG.Product, parameters=[ORG.Person],
-          id='developer-projects', title='Projects')
-def get_developer_projects(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, []
-
-
 @app.metric('/total-director-products', parameters=[ORG.Person],
             id='director-products', title='Products')
 def get_total_director_products(uid, **kwargs):
@@ -199,7 +181,7 @@ def get_director_products(uid, **kwargs):
     return args, get_position_products(uid, args, 'directors', flag_total)
 
 
-@app.metric('/total-architects-products', parameters=[ORG.Person],
+@app.metric('/total-architect-products', parameters=[ORG.Person],
             id='architects-products', title='Products')
 def get_total_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
@@ -207,7 +189,7 @@ def get_total_architect_products(uid, **kwargs):
     return args, len(get_position_products(uid, args, 'architects', flag_total))
 
 
-@app.view('/architects-products', target=ORG.Product, parameters=[ORG.Person],
+@app.view('/architect-products', target=ORG.Product, parameters=[ORG.Person],
           id='architects-products', title='Products')
 def get_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
