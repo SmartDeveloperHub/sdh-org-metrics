@@ -164,7 +164,7 @@ def get_project_repositories(pjid, **kwargs):
                     rep_info.get('first_commit'), rep_info.get('last_commit')
                 ):
                     res_prj.add(k)
-            projects = repos
+            repos = res_prj
         res = []
         [res.append({
             'id': store.db.hgetall(x).get('id'),
