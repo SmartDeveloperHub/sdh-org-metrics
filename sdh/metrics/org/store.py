@@ -54,8 +54,35 @@ class ORGStore(FragmentStore):
         else:
             return eval(proj)
 
-    def get_all_project_repositories(self, project_uri):
-        return self.db.smembers(project_uri + ":r:")
+    def get_all_products(self):
+        res = set()
+        r_keys = self.db.keys('*:p:')
+        for i in r_keys:
+            res = res.union(set(self.db.smembers(i)))
+        return list(res)
+
+    def get_all_products_id(self):
+        res = {}
+        [res.update({self.db.get(x): x}) for x in self.get_all_products()]
+        return res
+
+    def get_all_product_projects(self, product_uri):
+        return self.db.smembers(product_uri + ":pj:")
+
+    def get_all_projects(self):
+        res = set()
+        r_keys = self.db.keys('*:pj:')
+        for i in r_keys:
+            res = res.union(set(self.db.smembers(i)))
+        return list(res)
+
+    def get_all_projects_id(self):
+        res = {}
+        [res.update({self.db.get(x): x}) for x in self.get_all_projects()]
+        return res
 
     def get_all_project_products(self, project_uri):
         return self.db.smembers(project_uri + ":p:")
+
+    def get_all_project_repositories(self, project_uri):
+        return self.db.smembers(project_uri + ":r:")

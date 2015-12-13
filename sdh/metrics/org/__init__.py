@@ -88,6 +88,7 @@ def add_org_and_pos(arg):
 
 @st.query([
     '?prod org:relatesToProject ?prj',
+    '?prod org:id ?prid',
     '?prj org:id ?prjid',
     '?prj doap:repository ?rep',
     '?prj org:affiliation ?_aff',
@@ -99,7 +100,8 @@ def add_repositories_org(arg):
     mem = arg.get('mem')
     prjid = arg.get('prjid')
     st.execute('set', prj, prjid)
-    st.execute('sadd', prod + ':p:', prj)
+    st.execute('set', prod, prid)
+    st.execute('sadd', prod + ':pj:', prj)
     st.execute('sadd', prj + ':p:', prod)
     repo_name = get_last_path_from_url(arg.get('rep'))
     st.execute('hset', 'tmp-rep', repo_name, prj)

@@ -56,6 +56,20 @@ def detect_overlap_date(a_begin, a_end, b_begin, b_end):
     )
 
 
+def detect_project_repositories_overlap(uri, args):
+    flag_do = False
+    res_tmp = store.get_all_project_repositories(uri)
+    for k in res_tmp:
+        rep_info = store.db.hgetall(k)
+        if detect_overlap_date(
+            args.get('begin'), args.get('end'),
+            rep_info.get('first_commit'), rep_info.get('last_commit')
+        ):
+            flag_do = True
+            break
+    return flag_do
+
+
 def get_position_projects(uid, args, position, flag_total, only_uris):
     positions_id = store.get_all_members_id(position)
     if uid not in positions_id:
@@ -65,17 +79,7 @@ def get_position_projects(uid, args, position, flag_total, only_uris):
         if not flag_total:
             res_prj = set()
             for x in projects:
-                flag_do = False
-                res_tmp = store.get_all_project_repositories(x)
-                for k in res_tmp:
-                    rep_info = store.db.hgetall(k)
-                    if detect_overlap_date(
-                        args.get('begin'), args.get('end'),
-                        rep_info.get('first_commit'), rep_info.get('last_commit')
-                    ):
-                        flag_do = True
-                        break
-                if flag_do:
+                if detect_project_repositories_overlap(x, args):
                     res_prj.add(x)
             projects = list(res_prj)
         res = []
@@ -115,6 +119,58 @@ def get_director_position(uid, args, position, flag_total):
         'uri': x
     }) for x in members_dir]
     return res
+
+
+@app.view('/product-projects', target=ORG.Project, parameters=[ORG.Product],
+          id='product-projects', title='Projects')
+def get_product_projects(prid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    products_id = store.get_all_products_id()
+    if prid not in products_id:
+        return args, []
+    else:
+        projects = store.get_all_product_projects(products_id[prid])
+        if not flag_total:
+            res_prj = set()
+            for x in projects:
+                if detect_project_repositories_overlap(x, args):
+                    res_prj.add(x)
+            projects = list(res_prj)
+        res = []
+        [res.append({
+            'id': store.db.get(x),
+            'uri': x
+        }) for x in projects]
+        return args, res
+
+
+@app.view('/project-repositories', target=ORG.Repository, parameters=[ORG.Project],
+          id='project-repositories', title='Projects')
+def get_project_repositories(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    products_id = store.get_all_projects_id()
+    if pjid not in products_id:
+        return args, []
+    else:
+        repos = store.get_all_project_repositories(products_id[pjid])
+        if not flag_total:
+            res_prj = set()
+            for k in repos:
+                rep_info = store.db.hgetall(k)
+                if detect_overlap_date(
+                    args.get('begin'), args.get('end'),
+                    rep_info.get('first_commit'), rep_info.get('last_commit')
+                ):
+                    res_prj.add(k)
+            projects = repos
+        res = []
+        [res.append({
+            'id': store.db.hgetall(x).get('id'),
+            'uri': x
+        }) for x in repos]
+        return args, res
 
 
 @app.metric('/total-director-projects', parameters=[ORG.Person],
