@@ -68,9 +68,9 @@ def detect_project_repositories_overlap(uri, args):
     )
 
 
-def get_external_director_metric(uid, endpoint, aggregate, args, flag):
+def get_external_position_metric(uid, endpoint, position, aggregate, args, flag):
     try:
-        pr = get_position_products(uid, args, 'directors', flag)
+        pr = get_position_products(uid, args, position, flag)
         pr_res = []
         if args['begin'] == 0:
             args['begin'] = None
@@ -142,8 +142,8 @@ def get_position_products(uid, args, position, flag_total):
     return res
 
 
-def get_director_position(uid, args, position, flag_total):
-    pr = set(get_position_projects(uid, args, 'directors', flag_total, True))
+def get_position_position(uid, args, fil, position, flag_total):
+    pr = set(get_position_projects(uid, args, fil, flag_total, True))
     members = store.get_all_members(position)
     members_dir = set()
     res = []
@@ -155,21 +155,14 @@ def get_director_position(uid, args, position, flag_total):
         'uri': x
     }) for x in members_dir]
     return res
+
+
+def get_director_position(uid, args, position, flag_total):
+    return get_position_position(uid, args, 'directors', position, flag_total)
 
 
 def get_pmanager_position(uid, args, position, flag_total):
-    pr = set(get_position_projects(uid, args, 'productmanagers', flag_total, True))
-    members = store.get_all_members(position)
-    members_dir = set()
-    res = []
-    for x in members:
-        if len(pr.intersection(set(store.get_all_member_projects(x)))) > 0:
-            members_dir.add(x)
-    [res.append({
-        'id': store.db.hgetall(x).get("id"),
-        'uri': x
-    }) for x in members_dir]
-    return res
+    return get_position_position(uid, args, 'productmanagers', position, flag_total)
 
 
 def get_director_roles(uid, args, role, flag_total):
@@ -413,7 +406,7 @@ def get_director_members(uid, **kwargs):
 def get_director_activity(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-activity', 'sum', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-activity', 'directors', 'sum', args, flag_total)
 
 
 @app.metric('/director-quality', aggr='avg', parameters=[ORG.Person],
@@ -421,7 +414,7 @@ def get_director_activity(uid, **kwargs):
 def get_director_quality(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-quality', 'avg', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-quality', 'directors', 'avg', args, flag_total)
 
 
 @app.metric('/director-health', aggr='avg', parameters=[ORG.Person],
@@ -429,7 +422,7 @@ def get_director_quality(uid, **kwargs):
 def get_director_health(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-health', 'directors', 'avg', args, flag_total)
 
 
 @app.metric('/director-costs', parameters=[ORG.Person],
@@ -437,7 +430,7 @@ def get_director_health(uid, **kwargs):
 def get_director_costs(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-cost', 'sum', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-cost', 'directors', 'sum', args, flag_total)
 
 
 @app.metric('/director-externals', parameters=[ORG.Person],
@@ -445,7 +438,7 @@ def get_director_costs(uid, **kwargs):
 def get_director_externals(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-externals', 'sum', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-externals', 'directors', 'sum', args, flag_total)
 
 
 @app.metric('/director-timetomarket', aggr='avg', parameters=[ORG.Person],
@@ -453,7 +446,7 @@ def get_director_externals(uid, **kwargs):
 def get_director_timetomarket(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-timetomarket', 'avg', args, flag_total)
+    return get_external_position_metric(uid, 'sum-product-timetomarket', 'directors', 'avg', args, flag_total)
 
 
 @app.view('/pmanager-architects', target=ORG.Person, parameters=[ORG.Person],
@@ -482,3 +475,43 @@ def get_pmanager_members(uid, **kwargs):
         "uri": res[x]
     }) for x in res.keys()]
     return co, res_mem
+
+
+@app.metric('/pmanager-activity', parameters=[ORG.Person],
+            id='pmanager-activity', title='Activity of Product Manager')
+def get_pmanager_activity(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_position_metric(uid, 'sum-product-activity', 'productmanagers', 'sum', args, flag_total)
+
+
+@app.metric('/pmanager-quality', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-quality', title='Quality of Product Manager')
+def get_pmanager_quality(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_position_metric(uid, 'sum-product-quality', 'productmanagers', 'avg', args, flag_total)
+
+
+@app.metric('/pmanager-health', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-health', title='Health of Product Manager')
+def get_pmanager_health(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_position_metric(uid, 'sum-product-health', 'productmanagers', 'avg', args, flag_total)
+
+
+@app.metric('/pmanager-costs', parameters=[ORG.Person],
+            id='pmanager-costs', title='Costs of Product Manager')
+def get_pmanager_costs(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_position_metric(uid, 'sum-product-cost', 'productmanagers', 'sum', args, flag_total)
+
+
+@app.metric('/pmanager-timetomarket', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-timetomarket', title='Time To Market from Products of Product Manager')
+def get_pmanager_timetomarket(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_position_metric(uid, 'sum-product-timetomarket', 'productmanagers', 'avg', args, flag_total)
