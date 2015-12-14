@@ -72,15 +72,23 @@ def get_external_director_metric(uid, endpoint, aggregate, args, flag):
         pr_res = []
         if args['begin'] == 0:
             args['begin'] = None
+        tmp_arg = args
         if flag:
-            for x in pr:
-                pr_temp_frame = store.get_product_temporal_frame(x.get('uri'))
-                tmp_arg = args
-                tmp_arg['begin'] = pr_temp_frame.get('first_commit')
-                tmp_arg['end'] = pr_temp_frame.get('last_commit')
-                pr_res.append(app.request_metric(endpoint, prid=x.get('id'), **tmp_arg))
+            if aggregate == 'sum':
+                tmp_frame = store.get_all_products_temporal_frame()
+                tmp_arg['begin'] = tmp_frame.get('first_commit')
+                tmp_arg['end'] = tmp_frame.get('last_commit')
+                pr_res = map(
+                    lambda x: app.request_metric(endpoint, prid=x.get('id'), **tmp_arg), pr
+                )
+            else:
+                for k in pr:
+                    pr_temp_frame = store.get_product_temporal_frame(k.get('uri'))
+                    tmp_arg['begin'] = pr_temp_frame.get('first_commit')
+                    tmp_arg['end'] = pr_temp_frame.get('last_commit')
+                    pr_res.append(app.request_metric(endpoint, prid=k.get('id'), **tmp_arg))
         else:
-            pr_res = map(lambda x: pr_res.append(app.request_metric(endpoint, prid=x.get('id'), **args)), pr)
+            pr_res = map(lambda k: app.request_metric(endpoint, prid=k.get('id'), **tmp_arg), pr)
         if len(pr_res):
             context = pr_res[0][0]
         else:
@@ -204,7 +212,7 @@ def get_project_repositories(pjid, **kwargs):
 def get_total_director_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_projects(uid, args, 'directors', flag_total, False))
+    return args, [len(get_position_projects(uid, args, 'directors', flag_total, False))]
 
 
 @app.view('/director-projects', target=ORG.Project, parameters=[ORG.Person],
@@ -220,7 +228,7 @@ def get_director_projects(uid, **kwargs):
 def get_total_architects_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_projects(uid, args, 'architects', flag_total, False))
+    return args, [len(get_position_projects(uid, args, 'architects', flag_total, False))]
 
 
 @app.view('/architect-projects', target=ORG.Project, parameters=[ORG.Person],
@@ -236,7 +244,7 @@ def get_architect_projects(uid, **kwargs):
 def get_total_manager_projects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_projects(uid, args, 'productmanagers', flag_total, False))
+    return args, [len(get_position_projects(uid, args, 'productmanagers', flag_total, False))]
 
 
 @app.view('/pmanager-projects', target=ORG.Project, parameters=[ORG.Person],
@@ -252,7 +260,7 @@ def get_manager_projects(uid, **kwargs):
 def get_total_director_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_products(uid, args, 'directors', flag_total))
+    return args, [len(get_position_products(uid, args, 'directors', flag_total))]
 
 
 @app.view('/director-products', target=ORG.Product, parameters=[ORG.Person],
@@ -268,7 +276,7 @@ def get_director_products(uid, **kwargs):
 def get_total_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_products(uid, args, 'architects', flag_total))
+    return args, [len(get_position_products(uid, args, 'architects', flag_total))]
 
 
 @app.view('/architect-products', target=ORG.Product, parameters=[ORG.Person],
@@ -284,7 +292,7 @@ def get_architect_products(uid, **kwargs):
 def get_total_manager_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return args, len(get_position_products(uid, args, 'productmanagers', flag_total))
+    return args, [len(get_position_products(uid, args, 'productmanagers', flag_total))]
 
 
 @app.view('/pmanager-products', target=ORG.Product, parameters=[ORG.Person],
