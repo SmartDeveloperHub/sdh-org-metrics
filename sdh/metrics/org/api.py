@@ -283,6 +283,26 @@ def get_director_architects(uid, **kwargs):
     return args, get_director_position(uid, args, 'architects', flag_total)
 
 
+@app.metric('/director-activity', parameters=[ORG.Person],
+            id='director-activity', title='Activity of Director')
+def get_director_activity(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    try:
+        pr = get_position_products(uid, args, 'directors', flag_total)
+        devs = map(lambda k: app.request_metric('sum-product-activity', prid=k.get('id'), **kwargs), pr)
+        if len(devs):
+            context = devs[0][0]
+        else:
+            context = args
+        v = zip(*map(lambda x: x[1], devs))
+        res = [sum(x) for x in v]
+        return context, res
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
+
+
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
           id='director-developers', title='Developers of Director')
 def get_director_developers(uid, **kwargs):
