@@ -157,6 +157,21 @@ def get_director_position(uid, args, position, flag_total):
     return res
 
 
+def get_pmanager_position(uid, args, position, flag_total):
+    pr = set(get_position_projects(uid, args, 'productmanagers', flag_total, True))
+    members = store.get_all_members(position)
+    members_dir = set()
+    res = []
+    for x in members:
+        if len(pr.intersection(set(store.get_all_member_projects(x)))) > 0:
+            members_dir.add(x)
+    [res.append({
+        'id': store.db.hgetall(x).get("id"),
+        'uri': x
+    }) for x in members_dir]
+    return res
+
+
 def get_director_roles(uid, args, role, flag_total):
     pr = set(get_position_projects(uid, args, 'directors', flag_total, True))
     members = store.get_all_members(role)
@@ -170,6 +185,43 @@ def get_director_roles(uid, args, role, flag_total):
         'uri': x
     }) for x in members_dir]
     return res
+
+
+def helper_get_director_pmanagers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_director_position(uid, args, 'productmanagers', flag_total)
+
+
+def helper_get_director_architects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_director_position(uid, args, 'architects', flag_total)
+
+
+def helper_get_pmanager_architects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_pmanager_position(uid, args, 'architects', flag_total)
+
+
+def helper_get_position_developers(uid, position, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    try:
+        res = set()
+        pr = get_position_products(uid, args, position, flag_total)
+        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
+        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
+        res_devs = []
+        [res_devs.append({
+            "id": store.db.hgetall(x).get("id"),
+            "uri": x
+        }) for x in res]
+        return args, res_devs
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
 
 
 @app.view('/product-projects', target=ORG.Project, parameters=[ORG.Product],
@@ -323,38 +375,37 @@ def get_manager_products(uid, **kwargs):
 @app.view('/director-productmanagers', target=ORG.Person, parameters=[ORG.Person],
           id='director-productmanagers', title='Product Managers of Director')
 def get_director_pmanagers(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, get_director_position(uid, args, 'productmanagers', flag_total)
+    return helper_get_director_pmanagers(uid, **kwargs)
 
 
 @app.view('/director-architects', target=ORG.Person, parameters=[ORG.Person],
           id='director-architects', title='Architects of Director')
 def get_director_architects(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    return args, get_director_position(uid, args, 'architects', flag_total)
+    return helper_get_director_architects(uid, **kwargs)
 
 
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
           id='director-developers', title='Developers of Director')
 def get_director_developers(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    try:
-        res = set()
-        pr = get_position_products(uid, args, 'directors', flag_total)
-        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
-        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
-        res_devs = []
-        [res_devs.append({
-            "id": store.db.hgetall(x).get("id"),
-            "uri": x
-        }) for x in res]
-        return args, res_devs
-    except (EnvironmentError, AttributeError) as e:
-        raise APIError(e.message)
-    return args, []
+    return helper_get_position_developers(uid, 'directors', **kwargs)
+
+
+@app.view('/director-members', target=ORG.Person, parameters=[ORG.Person],
+          id='director-members', title='Members below Director')
+def get_director_members(uid, **kwargs):
+    res = {}
+    co, pm = helper_get_director_pmanagers(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in pm]
+    co, ar = helper_get_director_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'directors' **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = []
+    [res_mem.append({
+        "id": x,
+        "uri": res[x]
+    }) for x in res.keys()]
+    return co, res_mem
 
 
 @app.metric('/director-activity', parameters=[ORG.Person],
@@ -381,22 +432,29 @@ def get_director_health(uid, **kwargs):
     return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total)
 
 
+@app.view('/pmanager-architects', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-architects', title='Architects of Product Manager')
+def get_pmanager_architects(uid, **kwargs):
+    return helper_get_pmanager_architects(uid, **kwargs)
+
+
 @app.view('/pmanager-developers', target=ORG.Person, parameters=[ORG.Person],
           id='pmanager-developers', title='Developers of Product Manager')
 def get_pmanager_developers(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    try:
-        res = set()
-        pr = get_position_products(uid, args, 'productmanagers', flag_total)
-        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
-        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
-        res_devs = []
-        [res_devs.append({
-            "id": store.db.hgetall(x).get("id"),
-            "uri": x
-        }) for x in res]
-        return args, res_devs
-    except (EnvironmentError, AttributeError) as e:
-        raise APIError(e.message)
-    return args, []
+    return helper_get_position_developers(uid, 'productmanagers', **kwargs)
+
+
+@app.view('/pmanager-members', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-members', title='Members below Product Manager')
+def get_pmanager_members(uid, **kwargs):
+    res = {}
+    co, ar = helper_get_pmanager_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'productmanagers', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = []
+    [res_mem.append({
+        "id": x,
+        "uri": res[x]
+    }) for x in res.keys()]
+    return co, res_mem
