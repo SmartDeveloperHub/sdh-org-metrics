@@ -66,11 +66,13 @@ def detect_project_repositories_overlap(uri, args):
     )
 
 
-def get_external_director_metric(uid, endpoint, aggregate, args, flag, with_frame):
+def get_external_director_metric(uid, endpoint, aggregate, args, flag):
     try:
         pr = get_position_products(uid, args, 'directors', flag)
         pr_res = []
-        if with_frame and not flag:
+        if args['begin'] == 0:
+            args['begin'] = None
+        if flag:
             for x in pr:
                 pr_temp_frame = store.get_product_temporal_frame(x.get('uri'))
                 tmp_arg = args
@@ -78,7 +80,7 @@ def get_external_director_metric(uid, endpoint, aggregate, args, flag, with_fram
                 tmp_arg['end'] = pr_temp_frame.get('last_commit')
                 pr_res.append(app.request_metric(endpoint, prid=x.get('id'), **tmp_arg))
         else:
-            pr_res = map(lambda x: app.request_metric(endpoint, prid=x.get('id'), **args), pr)
+            pr_res = map(lambda x: pr_res.append(app.request_metric(endpoint, prid=x.get('id'), **args)), pr)
         if len(pr_res):
             context = pr_res[0][0]
         else:
@@ -314,7 +316,7 @@ def get_director_architects(uid, **kwargs):
 def get_director_activity(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-activity', 'sum', args, flag_total, False)
+    return get_external_director_metric(uid, 'sum-product-activity', 'sum', args, flag_total)
 
 
 @app.metric('/director-quality', aggr='avg', parameters=[ORG.Person],
@@ -322,7 +324,7 @@ def get_director_activity(uid, **kwargs):
 def get_director_quality(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-quality', 'avg', args, flag_total, True)
+    return get_external_director_metric(uid, 'sum-product-quality', 'avg', args, flag_total)
 
 
 @app.metric('/director-health', aggr='avg', parameters=[ORG.Person],
@@ -330,7 +332,7 @@ def get_director_quality(uid, **kwargs):
 def get_director_health(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total, True)
+    return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total)
 
 
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
