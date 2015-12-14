@@ -98,6 +98,7 @@ def add_repositories_org(arg):
     prod = arg.get("prod")
     prj = arg.get("prj")
     mem = arg.get('mem')
+    prid = arg.get('prid')
     prjid = arg.get('prjid')
     st.execute('set', prj, prjid)
     st.execute('set', prod, prid)
