@@ -75,7 +75,7 @@ def get_external_director_metric(uid, endpoint, aggregate, args, flag):
         tmp_arg = args
         if flag:
             if aggregate == 'sum':
-                tmp_frame = store.get_all_products_temporal_frame()
+                tmp_frame = store.get_specific_products_temporal_frame(pr)
                 tmp_arg['begin'] = tmp_frame.get('first_commit')
                 tmp_arg['end'] = tmp_frame.get('last_commit')
                 pr_res = map(

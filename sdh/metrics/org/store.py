@@ -78,6 +78,17 @@ class ORGStore(FragmentStore):
             'first_commit': min(pr_fc), 'last_commit': max(pr_lc)
         }
 
+    def get_specific_products_temporal_frame(self, products):
+        pr_fc = []
+        pr_lc = []
+        for x in products:
+            tf = self.get_product_temporal_frame(x.get('uri'))
+            pr_fc.append(tf.get("first_commit"))
+            pr_lc.append(tf.get("last_commit"))
+        return {
+            'first_commit': min(pr_fc), 'last_commit': max(pr_lc)
+        }
+
     def get_all_product_projects(self, product_uri):
         return self.db.smembers(product_uri + ":pj:")
 
