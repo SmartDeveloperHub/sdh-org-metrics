@@ -448,12 +448,12 @@ def get_director_externals(uid, **kwargs):
     return get_external_director_metric(uid, 'sum-product-externals', 'sum', args, flag_total)
 
 
-@app.metric('/director-timetomarket', parameters=[ORG.Person],
+@app.metric('/director-timetomarket', aggr='avg', parameters=[ORG.Person],
             id='director-timetomarket', title='Time To Market from Products of Director')
 def get_director_timetomarket(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_director_metric(uid, 'sum-product-timetomarket', 'sum', args, flag_total)
+    return get_external_director_metric(uid, 'sum-product-timetomarket', 'avg', args, flag_total)
 
 
 @app.view('/pmanager-architects', target=ORG.Person, parameters=[ORG.Person],
