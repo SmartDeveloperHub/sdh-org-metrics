@@ -30,6 +30,10 @@ from datetime import datetime
 __author__ = 'Alejandro F. Carrera'
 
 
+def get_average_list(l):
+    return reduce(lambda x, y: x + y, l) / len(l)
+
+
 def get_correct_kwargs(kwargs):
     args = {
         'begin': 0 if kwargs.get('begin') is None else kwargs.get('begin'),
@@ -55,17 +59,39 @@ def detect_overlap_date(a_begin, a_end, b_begin, b_end):
 
 
 def detect_project_repositories_overlap(uri, args):
-    flag_do = False
-    res_tmp = store.get_all_project_repositories(uri)
-    for k in res_tmp:
-        rep_info = store.db.hgetall(k)
-        if detect_overlap_date(
-            args.get('begin'), args.get('end'),
-            rep_info.get('first_commit'), rep_info.get('last_commit')
-        ):
-            flag_do = True
-            break
-    return flag_do
+    temp_frame = store.get_project_temporal_frame(uri)
+    return detect_overlap_date(
+        args.get('begin'), args.get('end'),
+        temp_frame.get('first_commit'), temp_frame.get('last_commit')
+    )
+
+
+def get_external_director_metric(uid, endpoint, aggregate, args, flag, with_frame):
+    try:
+        pr = get_position_products(uid, args, 'directors', flag)
+        pr_res = []
+        if with_frame and not flag:
+            for x in pr:
+                pr_temp_frame = store.get_product_temporal_frame(x.get('uri'))
+                tmp_arg = args
+                tmp_arg['begin'] = pr_temp_frame.get('first_commit')
+                tmp_arg['end'] = pr_temp_frame.get('last_commit')
+                pr_res.append(app.request_metric(endpoint, prid=x.get('id'), **tmp_arg))
+        else:
+            pr_res = map(lambda x: app.request_metric(endpoint, prid=x.get('id'), **args), pr)
+        if len(pr_res):
+            context = pr_res[0][0]
+        else:
+            context = args
+        v = zip(*map(lambda x: x[1], pr_res))
+        if aggregate == 'avg':
+            res = [get_average_list(x) for x in v]
+        else:
+            res = [sum(x) for x in v]
+        return context, res
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
 
 
 def get_position_projects(uid, args, position, flag_total, only_uris):
@@ -288,19 +314,23 @@ def get_director_architects(uid, **kwargs):
 def get_director_activity(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    try:
-        pr = get_position_products(uid, args, 'directors', flag_total)
-        devs = map(lambda k: app.request_metric('sum-product-activity', prid=k.get('id'), **kwargs), pr)
-        if len(devs):
-            context = devs[0][0]
-        else:
-            context = args
-        v = zip(*map(lambda x: x[1], devs))
-        res = [sum(x) for x in v]
-        return context, res
-    except (EnvironmentError, AttributeError) as e:
-        raise APIError(e.message)
-    return args, []
+    return get_external_director_metric(uid, 'sum-product-activity', 'sum', args, flag_total, False)
+
+
+@app.metric('/director-quality', aggr='avg', parameters=[ORG.Person],
+            id='director-quality', title='Quality of Director')
+def get_director_quality(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_director_metric(uid, 'sum-product-quality', 'avg', args, flag_total, True)
+
+
+@app.metric('/director-health', aggr='avg', parameters=[ORG.Person],
+            id='director-health', title='Health of Director')
+def get_director_health(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total, True)
 
 
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
