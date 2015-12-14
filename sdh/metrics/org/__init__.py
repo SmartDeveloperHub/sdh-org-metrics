@@ -62,6 +62,12 @@ def get_last_path_from_url(url):
     return urlparse(url).path.split('/').pop(-1)
 
 
+def remove_and_clean_string(string):
+    dw = " ".join(string.split())
+    dw = dw.replace(" ", "")
+    return dw.lower()
+
+
 #####################################
 
 
@@ -79,7 +85,7 @@ def add_org_and_pos(arg):
     prod = arg.get('prod')
     mem = arg.get('mem')
     prid = arg.get('prid')
-    pos = str(arg.get('pos')).lower()
+    pos = remove_and_clean_string(arg.get('pos'))
     st.execute('sadd', org + ':p:', prod)
     st.execute('sadd', org + ':m:' + pos, mem)
     st.execute('hset', mem, 'id', arg.get('mid'))
@@ -87,6 +93,7 @@ def add_org_and_pos(arg):
 
 
 @st.query([
+    '?oh org:hasProduct ?prod',
     '?prod org:relatesToProject ?prj',
     '?prod org:id ?prid',
     '?prj org:id ?prjid',
@@ -97,14 +104,16 @@ def add_org_and_pos(arg):
     '?_role rdfs:label ?rol'
 ])
 def add_repositories_org(arg):
+    org = arg.get('oh')
     prod = arg.get("prod")
     prj = arg.get("prj")
     mem = arg.get('mem')
     prid = arg.get('prid')
     prjid = arg.get('prjid')
-    role = arg.get('rol')
+    role = remove_and_clean_string(arg.get('rol'))
     st.execute('set', prj, prjid)
     st.execute('set', prod, prid)
+    st.execute('sadd', org + ':m:' + role, mem)
     st.execute('sadd', prod + ':pj:', prj)
     st.execute('sadd', prj + ':p:', prod)
     repo_name = get_last_path_from_url(arg.get('rep'))
