@@ -52,7 +52,7 @@ class ORGStore(FragmentStore):
         if proj is None:
             return []
         else:
-            return eval(proj)
+            return eval(proj).keys()
 
     def get_all_products(self):
         res = set()

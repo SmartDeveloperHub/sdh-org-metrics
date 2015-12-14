@@ -92,7 +92,9 @@ def add_org_and_pos(arg):
     '?prj org:id ?prjid',
     '?prj doap:repository ?rep',
     '?prj org:affiliation ?_aff',
-    '?_aff org:affiliate ?mem'
+    '?_aff org:affiliate ?mem',
+    '?_aff org:role ?_role',
+    '?_role rdfs:label ?rol'
 ])
 def add_repositories_org(arg):
     prod = arg.get("prod")
@@ -100,6 +102,7 @@ def add_repositories_org(arg):
     mem = arg.get('mem')
     prid = arg.get('prid')
     prjid = arg.get('prjid')
+    role = arg.get('rol')
     st.execute('set', prj, prjid)
     st.execute('set', prod, prid)
     st.execute('sadd', prod + ':pj:', prj)
@@ -108,11 +111,15 @@ def add_repositories_org(arg):
     st.execute('hset', 'tmp-rep', repo_name, prj)
     old_proj = st.db.hget(mem, 'proj')
     if old_proj is None:
-        st.execute('hset', mem, 'proj', [prj])
+        st.execute('hset', mem, 'proj', {prj: set([role])})
     else:
-        old_proj = set(eval(old_proj))
-        old_proj.add(prj)
-        st.execute('hset', mem, 'proj', list(old_proj))
+        old_proj = eval(old_proj)
+        if prj in old_proj:
+            old_proj[prj].add(role)
+        else:
+            old_proj[prj] = set([role])
+        st.execute('hset', mem, 'proj', old_proj)
+
 
 #####################################
 
