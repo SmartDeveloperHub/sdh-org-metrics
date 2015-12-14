@@ -81,6 +81,10 @@ class ORGStore(FragmentStore):
     def get_specific_products_temporal_frame(self, products):
         pr_fc = []
         pr_lc = []
+        if not len(products):
+            return {
+                'first_commit': 0, 'last_commit': 0
+            }
         for x in products:
             tf = self.get_product_temporal_frame(x.get('uri'))
             pr_fc.append(tf.get("first_commit"))
