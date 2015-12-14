@@ -69,6 +69,19 @@ class ORGStore(FragmentStore):
     def get_all_product_projects(self, product_uri):
         return self.db.smembers(product_uri + ":pj:")
 
+    def get_product_temporal_frame(self, product_uri):
+        prj = self.get_all_product_projects(product_uri)
+        prj_fc = []
+        prj_lc = []
+        for x in prj:
+            prj_info = self.get_project_temporal_frame(x)
+            prj_fc.append(prj_info.get("first_commit"))
+            prj_lc.append(prj_info.get("last_commit"))
+        return {
+            'first_commit': min(prj_fc),
+            'last_commit': max(prj_lc)
+        }
+
     def get_all_projects(self):
         res = set()
         r_keys = self.db.keys('*:pj:')
@@ -86,3 +99,16 @@ class ORGStore(FragmentStore):
 
     def get_all_project_repositories(self, project_uri):
         return self.db.smembers(project_uri + ":r:")
+
+    def get_project_temporal_frame(self, project_uri):
+        rep = self.get_all_project_repositories(project_uri)
+        rep_fc = []
+        rep_lc = []
+        for x in rep:
+            rep_info = self.db.hgetall(x)
+            rep_fc.append(rep_info.get("first_commit"))
+            rep_lc.append(rep_info.get("last_commit"))
+        return {
+            'first_commit': min(rep_fc),
+            'last_commit': max(rep_lc)
+        }
