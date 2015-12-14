@@ -432,6 +432,30 @@ def get_director_health(uid, **kwargs):
     return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total)
 
 
+@app.metric('/director-costs', parameters=[ORG.Person],
+            id='director-costs', title='Costs of Director')
+def get_director_costs(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_director_metric(uid, 'sum-product-cost', 'sum', args, flag_total)
+
+
+@app.metric('/director-externals', parameters=[ORG.Person],
+            id='director-externals', title='External Committers from Products of Director')
+def get_director_externals(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_director_metric(uid, 'sum-product-externals', 'sum', args, flag_total)
+
+
+@app.metric('/director-timetomarket', parameters=[ORG.Person],
+            id='director-timetomarket', title='Time To Market from Products of Director')
+def get_director_timetomarket(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_external_director_metric(uid, 'sum-product-timetomarket', 'sum', args, flag_total)
+
+
 @app.view('/pmanager-architects', target=ORG.Person, parameters=[ORG.Person],
           id='pmanager-architects', title='Architects of Product Manager')
 def get_pmanager_architects(uid, **kwargs):
