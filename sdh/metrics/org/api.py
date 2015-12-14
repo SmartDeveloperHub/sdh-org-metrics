@@ -52,6 +52,8 @@ def detect_overlap_date(a_begin, a_end, b_begin, b_end):
     return (
         (int(a_begin) <= int(b_begin)) and (int(a_end) >= int(b_end))  # contains
     ) or (
+        (int(a_begin) >= int(b_begin)) and (int(a_end) <= int(b_end))  # contains
+    ) or (
         (int(a_begin) <= int(b_begin)) and (int(b_begin) <= int(a_end))  # shift right
     ) or (
         (int(a_begin) <= int(b_end)) and (int(b_end) <= int(a_end))  # shift left
@@ -143,6 +145,21 @@ def get_position_products(uid, args, position, flag_total):
 def get_director_position(uid, args, position, flag_total):
     pr = set(get_position_projects(uid, args, 'directors', flag_total, True))
     members = store.get_all_members(position)
+    members_dir = set()
+    res = []
+    for x in members:
+        if len(pr.intersection(set(store.get_all_member_projects(x)))) > 0:
+            members_dir.add(x)
+    [res.append({
+        'id': store.db.hgetall(x).get("id"),
+        'uri': x
+    }) for x in members_dir]
+    return res
+
+
+def get_director_roles(uid, args, role, flag_total):
+    pr = set(get_position_projects(uid, args, 'directors', flag_total, True))
+    members = store.get_all_members(role)
     members_dir = set()
     res = []
     for x in members:
@@ -319,6 +336,27 @@ def get_director_architects(uid, **kwargs):
     return args, get_director_position(uid, args, 'architects', flag_total)
 
 
+@app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
+          id='director-developers', title='Developers of Director')
+def get_director_developers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    try:
+        res = set()
+        pr = get_position_products(uid, args, 'directors', flag_total)
+        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
+        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
+        res_devs = []
+        [res_devs.append({
+            "id": store.db.hgetall(x).get("id"),
+            "uri": x
+        }) for x in res]
+        return args, res_devs
+    except (EnvironmentError, AttributeError) as e:
+        raise APIError(e.message)
+    return args, []
+
+
 @app.metric('/director-activity', parameters=[ORG.Person],
             id='director-activity', title='Activity of Director')
 def get_director_activity(uid, **kwargs):
@@ -341,27 +379,6 @@ def get_director_health(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return get_external_director_metric(uid, 'sum-product-health', 'avg', args, flag_total)
-
-
-@app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
-          id='director-developers', title='Developers of Director')
-def get_director_developers(uid, **kwargs):
-    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
-    args = get_correct_kwargs(kwargs)
-    try:
-        res = set()
-        pr = get_position_products(uid, args, 'directors', flag_total)
-        devs = map(lambda k: app.request_view('product-developers', prid=k.get('id'), **kwargs), pr)
-        [[res.add(j.get('uri')) for j in x] for x in map(lambda x: x[1], devs)]
-        res_devs = []
-        [res_devs.append({
-            "id": store.db.hgetall(x).get("id"),
-            "uri": x
-        }) for x in res]
-        return args, res_devs
-    except (EnvironmentError, AttributeError) as e:
-        raise APIError(e.message)
-    return args, []
 
 
 @app.view('/pmanager-developers', target=ORG.Person, parameters=[ORG.Person],
