@@ -166,18 +166,11 @@ def get_pmanager_position(uid, args, position, flag_total):
 
 
 def get_director_roles(uid, args, role, flag_total):
-    pr = set(get_position_projects(uid, args, 'directors', flag_total, True))
-    members = store.get_all_members(role)
-    members_dir = set()
-    res = []
-    for x in members:
-        if len(pr.intersection(set(store.get_all_member_projects(x)))) > 0:
-            members_dir.add(x)
-    [res.append({
-        'id': store.db.hgetall(x).get("id"),
-        'uri': x
-    }) for x in members_dir]
-    return res
+    return get_position_position(uid, args, 'directors', role, flag_total)
+
+
+def get_pmanager_roles(uid, args, role, flag_total):
+    return get_position_position(uid, args, 'productmanagers', role, flag_total)
 
 
 def helper_get_director_pmanagers(uid, **kwargs):
@@ -383,6 +376,38 @@ def get_director_developers(uid, **kwargs):
     return helper_get_position_developers(uid, 'directors', **kwargs)
 
 
+@app.view('/director-stakeholders', target=ORG.Person, parameters=[ORG.Person],
+          id='director-stakeholders', title='Stakeholders of Director')
+def get_director_stakeholders(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_director_roles(uid, args, 'stakeholder', flag_total)
+
+
+@app.view('/director-swarchitects', target=ORG.Person, parameters=[ORG.Person],
+          id='director-swarchitects', title='Software Architects of Director')
+def get_director_swarchitects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_director_roles(uid, args, 'softwarearchitect', flag_total)
+
+
+@app.view('/director-swdevelopers', target=ORG.Person, parameters=[ORG.Person],
+          id='director-swdevelopers', title='Software Developers of Director')
+def get_director_swdevelopers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_director_roles(uid, args, 'softwaredeveloper', flag_total)
+
+
+@app.view('/director-pjmanagers', target=ORG.Person, parameters=[ORG.Person],
+          id='director-pjmanagers', title='Project Managers of Director')
+def get_director_pjmanagers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_director_roles(uid, args, 'projectmanager', flag_total)
+
+
 @app.view('/director-members', target=ORG.Person, parameters=[ORG.Person],
           id='director-members', title='Members below Director')
 def get_director_members(uid, **kwargs):
@@ -459,6 +484,38 @@ def get_pmanager_architects(uid, **kwargs):
           id='pmanager-developers', title='Developers of Product Manager')
 def get_pmanager_developers(uid, **kwargs):
     return helper_get_position_developers(uid, 'productmanagers', **kwargs)
+
+
+@app.view('/pmanager-stakeholders', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-stakeholders', title='Stakeholders of Product Manager')
+def get_pmanager_stakeholders(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_pmanager_roles(uid, args, 'stakeholder', flag_total)
+
+
+@app.view('/pmanager-swarchitects', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-swarchitects', title='Software Architects of Product Manager')
+def get_pmanager_swarchitects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_pmanager_roles(uid, args, 'softwarearchitect', flag_total)
+
+
+@app.view('/pmanager-swdevelopers', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-swdevelopers', title='Software Developers of Product Manager')
+def get_pmanager_swdevelopers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_pmanager_roles(uid, args, 'softwaredeveloper', flag_total)
+
+
+@app.view('/pmanager-pjmanagers', target=ORG.Person, parameters=[ORG.Person],
+          id='pmanager-pjmanagers', title='Project Managers of Product Manager')
+def get_pmanager_pjmanagers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return get_pmanager_roles(uid, args, 'projectmanager', flag_total)
 
 
 @app.view('/pmanager-members', target=ORG.Person, parameters=[ORG.Person],
