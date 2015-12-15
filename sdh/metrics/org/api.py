@@ -106,6 +106,36 @@ def get_external_position_metric(uid, endpoint, position, aggregate, args, flag)
     return args, []
 
 
+def get_position_repositories(uid, args, position, flag_total, only_uris):
+    positions_id = store.get_all_members_id(position)
+    if uid not in positions_id:
+        return []
+    else:
+        projects = store.get_all_member_projects(positions_id[uid])
+        repos = []
+        for x in projects:
+            repos = store.get_all_project_repositories(x)
+            if not flag_total:
+                res_prj = set()
+                for k in repos:
+                    rep_info = store.db.hgetall(k)
+                    if detect_overlap_date(
+                        args.get('begin'), args.get('end'),
+                        rep_info.get('first_commit'), rep_info.get('last_commit')
+                    ):
+                        res_prj.add(k)
+                repos = res_prj
+        res = []
+        if only_uris:
+            return repos
+        else:
+            [res.append({
+                'id': store.db.hgetall(x).get('id'),
+                'uri': x
+            }) for x in repos]
+            return res
+
+
 def get_position_projects(uid, args, position, flag_total, only_uris):
     positions_id = store.get_all_members_id(position)
     if uid not in positions_id:
@@ -239,11 +269,11 @@ def get_product_projects(prid, **kwargs):
 def get_project_repositories(pjid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    products_id = store.get_all_projects_id()
-    if pjid not in products_id:
+    projects_id = store.get_all_projects_id()
+    if pjid not in projects_id:
         return args, []
     else:
-        repos = store.get_all_project_repositories(products_id[pjid])
+        repos = store.get_all_project_repositories(projects_id[pjid])
         if not flag_total:
             res_prj = set()
             for k in repos:
@@ -260,6 +290,22 @@ def get_project_repositories(pjid, **kwargs):
             'uri': x
         }) for x in repos]
         return args, res
+
+
+@app.metric('/total-director-repositories', parameters=[ORG.Person],
+            id='director-repositories', title='Repositories of Director')
+def get_total_director_repositories(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_position_repositories(uid, args, 'directors', flag_total, False))]
+
+
+@app.view('/director-repositories', target=SCM.Repository, parameters=[ORG.Person],
+          id='director-repositories', title='Repositories of Director')
+def get_director_repositories(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_repositories(uid, args, 'directors', flag_total, False)
 
 
 @app.metric('/total-director-projects', parameters=[ORG.Person],
@@ -340,6 +386,22 @@ def get_architect_products(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     return args, get_position_products(uid, args, 'architects', flag_total)
+
+
+@app.metric('/total-pmanager-repositories', parameters=[ORG.Person],
+            id='pmanager-repositories', title='Repositories of Product Manager')
+def get_total_pmanager_repositories(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_position_repositories(uid, args, 'productmanagers', flag_total, False))]
+
+
+@app.view('/pmanager-repositories', target=SCM.Repository, parameters=[ORG.Person],
+          id='pmanager-repositories', title='Repositories of Product Manager')
+def get_pmanager_repositories(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_position_repositories(uid, args, 'productmanagers', flag_total, False)
 
 
 @app.metric('/total-pmanager-products', parameters=[ORG.Person],
