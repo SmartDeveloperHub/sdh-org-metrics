@@ -492,7 +492,7 @@ def get_director_members(uid, **kwargs):
     return co, res_mem
 
 
-@app.metric('/director-productmembers', parameters=[ORG.Person],
+@app.metric('/director-productmembers', aggr='avg', parameters=[ORG.Person],
             id='director-productmembers', title='Product Members AVG of Director')
 def get_avg_director_productmembers(uid, **kwargs):
 
@@ -508,6 +508,29 @@ def get_avg_director_productmembers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     res_pr = len(get_position_products(uid, args, 'directors', flag_total))
+
+    if res_pr == 0:
+        return co, [0]
+
+    return co, [float(res_mem) / float(res_pr)]
+
+
+@app.metric('/director-projectmembers', aggr='avg', parameters=[ORG.Person],
+            id='director-projectmembers', title='Project Members AVG of Director')
+def get_avg_director_projectmembers(uid, **kwargs):
+
+    res = {}
+    co, pm = helper_get_director_pmanagers(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in pm]
+    co, ar = helper_get_director_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'directors', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = len(res.keys())
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_pr = len(get_position_projects(uid, args, 'directors', flag_total))
 
     if res_pr == 0:
         return co, [0]
@@ -664,7 +687,7 @@ def get_total_pmanager_members(uid, **kwargs):
     return co, [len(res.keys())]
 
 
-@app.metric('/pmanager-productmembers', parameters=[ORG.Person],
+@app.metric('/pmanager-productmembers', aggr='avg', parameters=[ORG.Person],
             id='pmanager-productmembers', title='Product Members AVG of Product Manager')
 def get_avg_pmanager_productmembers(uid, **kwargs):
 
@@ -678,6 +701,27 @@ def get_avg_pmanager_productmembers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
     res_pr = len(get_position_products(uid, args, 'productmanagers', flag_total))
+
+    if res_pr == 0:
+        return co, [0]
+
+    return co, [float(res_mem) / float(res_pr)]
+
+
+@app.metric('/pmanager-projectmembers', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-projectmembers', title='Project Members AVG of Product Manager')
+def get_avg_pmanager_projectmembers(uid, **kwargs):
+
+    res = {}
+    co, ar = helper_get_pmanager_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'productmanagers', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = len(res.keys())
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_pr = len(get_position_projects(uid, args, 'productmanagers', flag_total))
 
     if res_pr == 0:
         return co, [0]
