@@ -463,7 +463,7 @@ def get_director_pjmanagers(uid, **kwargs):
 
 @app.metric('/total-director-members', parameters=[ORG.Person],
             id='director-members', title='Members below Director')
-def get_director_members(uid, **kwargs):
+def get_total_director_members(uid, **kwargs):
     res = {}
     co, pm = helper_get_director_pmanagers(uid, **kwargs)
     [res.update({x.get('id'): x.get('uri')}) for x in pm]
