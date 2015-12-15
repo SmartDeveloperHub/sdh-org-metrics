@@ -128,6 +128,7 @@ def add_repositories_org(arg):
         else:
             old_proj[prj] = set([role])
         st.execute('hset', mem, 'proj', old_proj)
+    st.execute_pending()
 
 
 #####################################
