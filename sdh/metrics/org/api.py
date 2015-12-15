@@ -117,7 +117,6 @@ def get_position_repositories(uid, args, position, flag_total, only_uris):
         for x in projects:
             repos = store.get_all_project_repositories(x)
             if not flag_total:
-
                 for k in repos:
                     rep_info = store.db.hgetall(k)
                     if detect_overlap_date(
@@ -192,6 +191,36 @@ def get_director_position(uid, args, position, flag_total):
 
 def get_pmanager_position(uid, args, position, flag_total):
     return get_position_position(uid, args, 'productmanagers', position, flag_total)
+
+
+def get_project_roles(pjid, args, role, flag_total):
+    projects_id = store.get_all_projects_id()
+    if pjid not in projects_id:
+        return []
+    else:
+        if not flag_total and not detect_project_repositories_overlap(projects_id[pjid], args):
+            return []
+        if role == "softwaredeveloper":
+            tmp_arg = args
+            if not flag_total:
+                pr_temp_frame = store.get_project_temporal_frame(projects_id[pjid])
+                tmp_arg['begin'] = pr_temp_frame.get('first_commit')
+                tmp_arg['end'] = pr_temp_frame.get('last_commit')
+            co, res = app.request_view('project-developers', pjid=pjid, **tmp_arg)
+            return res
+        else:
+            res = set()
+            users_id = store.get_all_members(role)
+            for x in users_id:
+                pr_res = store.get_all_member_projects(x)
+                if projects_id[pjid] in pr_res:
+                    res.add(x)
+            res_set = []
+            [res_set.append({
+                'id': store.db.hgetall(x).get("id"),
+                'uri': x
+            }) for x in res]
+            return res_set
 
 
 def get_director_roles(uid, args, role, flag_total):
@@ -289,6 +318,70 @@ def get_project_repositories(pjid, **kwargs):
             'uri': x
         }) for x in repos]
         return args, res
+
+
+@app.metric('/total-project-stakeholders', parameters=[ORG.Project],
+            id='project-stakeholders', title='Stakeholders of Project')
+def get_total_project_stakeholders(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_project_roles(pjid, args, 'stakeholder', flag_total))]
+
+
+@app.view('/project-stakeholders', target=ORG.Person, parameters=[ORG.Project],
+          id='project-stakeholders', title='Stakeholders of Project')
+def get_project_stakeholders(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_project_roles(pjid, args, 'stakeholder', flag_total)
+
+
+@app.metric('/total-project-swarchitects', parameters=[ORG.Project],
+            id='project-swarchitects', title='Software Architects of Project')
+def get_total_project_swarchitects(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_project_roles(pjid, args, 'softwarearchitect', flag_total))]
+
+
+@app.view('/project-swarchitects', target=ORG.Person, parameters=[ORG.Project],
+          id='project-swarchitects', title='Software Architects of Project')
+def get_project_swarchitects(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_project_roles(pjid, args, 'softwarearchitect', flag_total)
+
+
+@app.metric('/total-project-pjmanagers', parameters=[ORG.Project],
+            id='project-pjmanagers', title='Project Managers of Project')
+def get_total_project_pjmanagers(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_project_roles(pjid, args, 'projectmanager', flag_total))]
+
+
+@app.view('/project-pjmanagers', target=ORG.Person, parameters=[ORG.Project],
+          id='project-pjmanagers', title='Project Managers of Project')
+def get_project_pjmanagers(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_project_roles(pjid, args, 'projectmanager', flag_total)
+
+
+@app.metric('/total-project-swdevelopers', parameters=[ORG.Project],
+            id='project-swdevelopers', title='Software Developers of Project')
+def get_total_project_swdevelopers(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_project_roles(pjid, args, 'softwaredeveloper', flag_total))]
+
+
+@app.view('/project-swdevelopers', target=ORG.Person, parameters=[ORG.Project],
+          id='project-swdevelopers', title='Software Developers of Project')
+def get_project_swdevelopers(pjid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, get_project_roles(pjid, args, 'softwaredeveloper', flag_total)
 
 
 @app.metric('/total-director-repositories', parameters=[ORG.Person],
