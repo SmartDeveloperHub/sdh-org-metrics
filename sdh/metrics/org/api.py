@@ -112,11 +112,12 @@ def get_position_repositories(uid, args, position, flag_total, only_uris):
         return []
     else:
         projects = store.get_all_member_projects(positions_id[uid])
-        repos = []
+        res_prj = set()
+        res = []
         for x in projects:
             repos = store.get_all_project_repositories(x)
             if not flag_total:
-                res_prj = set()
+
                 for k in repos:
                     rep_info = store.db.hgetall(k)
                     if detect_overlap_date(
@@ -124,15 +125,13 @@ def get_position_repositories(uid, args, position, flag_total, only_uris):
                         rep_info.get('first_commit'), rep_info.get('last_commit')
                     ):
                         res_prj.add(k)
-                repos = res_prj
-        res = []
         if only_uris:
-            return repos
+            return res_prj
         else:
             [res.append({
                 'id': store.db.hgetall(x).get('id'),
                 'uri': x
-            }) for x in repos]
+            }) for x in res_prj]
             return res
 
 
