@@ -592,7 +592,7 @@ def get_avg_director_projectmembers(uid, **kwargs):
 
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    res_pr = len(get_position_projects(uid, args, 'directors', flag_total))
+    res_pr = len(get_position_projects(uid, args, 'directors', flag_total, True))
 
     if res_pr == 0:
         return co, [0]
@@ -783,7 +783,7 @@ def get_avg_pmanager_projectmembers(uid, **kwargs):
 
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    res_pr = len(get_position_projects(uid, args, 'productmanagers', flag_total))
+    res_pr = len(get_position_projects(uid, args, 'productmanagers', flag_total, True))
 
     if res_pr == 0:
         return co, [0]
