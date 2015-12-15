@@ -577,6 +577,22 @@ def get_avg_director_productmembers(uid, **kwargs):
     return co, [float(res_mem) / float(res_pr)]
 
 
+@app.metric('/director-productrepositories', aggr='avg', parameters=[ORG.Person],
+            id='director-productrepositories', title='Product Repositories AVG of Director')
+def get_avg_director_productrepositories(uid, **kwargs):
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_rep = len(get_position_repositories(uid, args, 'directors', flag_total, True))
+
+    res_pr = len(get_position_products(uid, args, 'directors', flag_total))
+
+    if res_pr == 0:
+        return args, [0]
+
+    return args, [float(res_rep) / float(res_pr)]
+
+
 @app.metric('/director-projectmembers', aggr='avg', parameters=[ORG.Person],
             id='director-projectmembers', title='Project Members AVG of Director')
 def get_avg_director_projectmembers(uid, **kwargs):
@@ -598,6 +614,22 @@ def get_avg_director_projectmembers(uid, **kwargs):
         return co, [0]
 
     return co, [float(res_mem) / float(res_pr)]
+
+
+@app.metric('/director-projectrepositories', aggr='avg', parameters=[ORG.Person],
+            id='director-projectrepositories', title='Project Repositories AVG of Director')
+def get_avg_director_projectrepositories(uid, **kwargs):
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_rep = len(get_position_repositories(uid, args, 'directors', flag_total, True))
+
+    res_pr = len(get_position_projects(uid, args, 'directors', flag_total, True))
+
+    if res_pr == 0:
+        return args, [0]
+
+    return args, [float(res_rep) / float(res_pr)]
 
 
 @app.metric('/director-activity', parameters=[ORG.Person],
@@ -749,6 +781,22 @@ def get_total_pmanager_members(uid, **kwargs):
     return co, [len(res.keys())]
 
 
+@app.metric('/pmanager-productrepositories', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-productrepositories', title='Product Repositories AVG of Product Manager')
+def get_avg_pmanager_productrepositories(uid, **kwargs):
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_rep = len(get_position_repositories(uid, args, 'productmanagers', flag_total, True))
+
+    res_pr = len(get_position_products(uid, args, 'productmanagers', flag_total))
+
+    if res_pr == 0:
+        return args, [0]
+
+    return args, [float(res_rep) / float(res_pr)]
+
+
 @app.metric('/pmanager-productmembers', aggr='avg', parameters=[ORG.Person],
             id='pmanager-productmembers', title='Product Members AVG of Product Manager')
 def get_avg_pmanager_productmembers(uid, **kwargs):
@@ -768,6 +816,22 @@ def get_avg_pmanager_productmembers(uid, **kwargs):
         return co, [0]
 
     return co, [float(res_mem) / float(res_pr)]
+
+
+@app.metric('/pmanager-projectrepositories', aggr='avg', parameters=[ORG.Person],
+            id='pmanager-projectrepositories', title='Project Repositories AVG of Product Manager')
+def get_avg_pmanager_projectrepositories(uid, **kwargs):
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_rep = len(get_position_repositories(uid, args, 'productmanagers', flag_total, True))
+
+    res_pr = len(get_position_projects(uid, args, 'productmanagers', flag_total, True))
+
+    if res_pr == 0:
+        return args, [0]
+
+    return args, [float(res_rep) / float(res_pr)]
 
 
 @app.metric('/pmanager-projectmembers', aggr='avg', parameters=[ORG.Person],
