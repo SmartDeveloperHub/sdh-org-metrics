@@ -358,10 +358,24 @@ def get_manager_products(uid, **kwargs):
     return args, get_position_products(uid, args, 'productmanagers', flag_total)
 
 
+@app.metric('/total-director-productmanagers', parameters=[ORG.Person],
+            id='director-productmanagers', title='Product Managers of Director')
+def get_total_director_pmanagers(uid, **kwargs):
+    co, res = helper_get_director_pmanagers(uid, **kwargs)
+    return co, [len(res)]
+
+
 @app.view('/director-productmanagers', target=ORG.Person, parameters=[ORG.Person],
           id='director-productmanagers', title='Product Managers of Director')
 def get_director_pmanagers(uid, **kwargs):
     return helper_get_director_pmanagers(uid, **kwargs)
+
+
+@app.metric('/total-director-architects', parameters=[ORG.Person],
+            id='director-architects', title='Architects of Director')
+def get_total_director_architects(uid, **kwargs):
+    co, res = helper_get_director_architects(uid, **kwargs)
+    return co, [len(res)]
 
 
 @app.view('/director-architects', target=ORG.Person, parameters=[ORG.Person],
@@ -370,10 +384,25 @@ def get_director_architects(uid, **kwargs):
     return helper_get_director_architects(uid, **kwargs)
 
 
+@app.metric('/total-director-developers', parameters=[ORG.Person],
+            id='director-developers', title='Developers of Director')
+def get_total_director_developers(uid, **kwargs):
+    co, res = helper_get_position_developers(uid, 'directors', **kwargs)
+    return co, [len(res)]
+
+
 @app.view('/director-developers', target=ORG.Person, parameters=[ORG.Person],
           id='director-developers', title='Developers of Director')
 def get_director_developers(uid, **kwargs):
     return helper_get_position_developers(uid, 'directors', **kwargs)
+
+
+@app.metric('/total-director-stakeholders', parameters=[ORG.Person],
+            id='director-stakeholders', title='Stakeholders of Director')
+def get_total_director_stakeholders(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_director_roles(uid, args, 'stakeholder', flag_total))]
 
 
 @app.view('/director-stakeholders', target=ORG.Person, parameters=[ORG.Person],
@@ -381,7 +410,15 @@ def get_director_developers(uid, **kwargs):
 def get_director_stakeholders(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_director_roles(uid, args, 'stakeholder', flag_total)
+    return args, get_director_roles(uid, args, 'stakeholder', flag_total)
+
+
+@app.metric('/total-director-swarchitects', parameters=[ORG.Person],
+            id='director-swarchitects', title='Software Architects of Director')
+def get_total_director_swarchitects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_director_roles(uid, args, 'softwarearchitect', flag_total))]
 
 
 @app.view('/director-swarchitects', target=ORG.Person, parameters=[ORG.Person],
@@ -389,7 +426,15 @@ def get_director_stakeholders(uid, **kwargs):
 def get_director_swarchitects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_director_roles(uid, args, 'softwarearchitect', flag_total)
+    return args, get_director_roles(uid, args, 'softwarearchitect', flag_total)
+
+
+@app.metric('/total-director-swdevelopers', parameters=[ORG.Person],
+            id='director-swdevelopers', title='Software Developers of Director')
+def get_total_director_swdevelopers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_director_roles(uid, args, 'softwaredeveloper', flag_total))]
 
 
 @app.view('/director-swdevelopers', target=ORG.Person, parameters=[ORG.Person],
@@ -397,7 +442,15 @@ def get_director_swarchitects(uid, **kwargs):
 def get_director_swdevelopers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_director_roles(uid, args, 'softwaredeveloper', flag_total)
+    return args, get_director_roles(uid, args, 'softwaredeveloper', flag_total)
+
+
+@app.metric('/total-director-pjmanagers', parameters=[ORG.Person],
+            id='director-pjmanagers', title='Project Managers of Director')
+def get_total_director_pjmanagers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_director_roles(uid, args, 'projectmanager', flag_total))]
 
 
 @app.view('/director-pjmanagers', target=ORG.Person, parameters=[ORG.Person],
@@ -405,7 +458,20 @@ def get_director_swdevelopers(uid, **kwargs):
 def get_director_pjmanagers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_director_roles(uid, args, 'projectmanager', flag_total)
+    return args, get_director_roles(uid, args, 'projectmanager', flag_total)
+
+
+@app.metric('/total-director-members', parameters=[ORG.Person],
+            id='director-members', title='Members below Director')
+def get_director_members(uid, **kwargs):
+    res = {}
+    co, pm = helper_get_director_pmanagers(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in pm]
+    co, ar = helper_get_director_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'directors', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    return co, [len(res.keys())]
 
 
 @app.view('/director-members', target=ORG.Person, parameters=[ORG.Person],
@@ -416,7 +482,7 @@ def get_director_members(uid, **kwargs):
     [res.update({x.get('id'): x.get('uri')}) for x in pm]
     co, ar = helper_get_director_architects(uid, **kwargs)
     [res.update({x.get('id'): x.get('uri')}) for x in ar]
-    co, dev = helper_get_position_developers(uid, 'directors' **kwargs)
+    co, dev = helper_get_position_developers(uid, 'directors', **kwargs)
     [res.update({x.get('id'): x.get('uri')}) for x in dev]
     res_mem = []
     [res_mem.append({
@@ -424,6 +490,29 @@ def get_director_members(uid, **kwargs):
         "uri": res[x]
     }) for x in res.keys()]
     return co, res_mem
+
+
+@app.metric('/director-productmembers', parameters=[ORG.Person],
+            id='director-productmembers', title='Product Members AVG of Director')
+def get_avg_director_productmembers(uid, **kwargs):
+
+    res = {}
+    co, pm = helper_get_director_pmanagers(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in pm]
+    co, ar = helper_get_director_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'directors', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = len(res.keys())
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_pr = len(get_position_products(uid, args, 'directors', flag_total))
+
+    if res_pr == 0:
+        return co, [0]
+
+    return co, [float(res_mem) / float(res_pr)]
 
 
 @app.metric('/director-activity', parameters=[ORG.Person],
@@ -474,10 +563,24 @@ def get_director_timetomarket(uid, **kwargs):
     return get_external_position_metric(uid, 'sum-product-timetomarket', 'directors', 'avg', args, flag_total)
 
 
+@app.metric('/total-pmanager-architects', parameters=[ORG.Person],
+            id='pmanager-architects', title='Architects of Product Manager')
+def get_total_pmanager_architects(uid, **kwargs):
+    co, res = helper_get_pmanager_architects(uid, **kwargs)
+    return co, [len(res)]
+
+
 @app.view('/pmanager-architects', target=ORG.Person, parameters=[ORG.Person],
           id='pmanager-architects', title='Architects of Product Manager')
 def get_pmanager_architects(uid, **kwargs):
     return helper_get_pmanager_architects(uid, **kwargs)
+
+
+@app.metric('/total-pmanager-developers', parameters=[ORG.Person],
+            id='pmanager-developers', title='Developers of Product Manager')
+def get_total_pmanager_developers(uid, **kwargs):
+    co, res = helper_get_position_developers(uid, 'productmanagers', **kwargs)
+    return co, [len(res)]
 
 
 @app.view('/pmanager-developers', target=ORG.Person, parameters=[ORG.Person],
@@ -486,12 +589,28 @@ def get_pmanager_developers(uid, **kwargs):
     return helper_get_position_developers(uid, 'productmanagers', **kwargs)
 
 
+@app.metric('/total-pmanager-stakeholders', parameters=[ORG.Person],
+            id='pmanager-stakeholders', title='Stakeholders of Product Manager')
+def get_total_pmanager_stakeholders(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_pmanager_roles(uid, args, 'stakeholder', flag_total))]
+
+
 @app.view('/pmanager-stakeholders', target=ORG.Person, parameters=[ORG.Person],
           id='pmanager-stakeholders', title='Stakeholders of Product Manager')
 def get_pmanager_stakeholders(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_pmanager_roles(uid, args, 'stakeholder', flag_total)
+    return args, get_pmanager_roles(uid, args, 'stakeholder', flag_total)
+
+
+@app.metric('/total-pmanager-swarchitects', parameters=[ORG.Person],
+            id='pmanager-swarchitects', title='Software Architects of Product Manager')
+def get_total_pmanager_swarchitects(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_pmanager_roles(uid, args, 'softwarearchitect', flag_total))]
 
 
 @app.view('/pmanager-swarchitects', target=ORG.Person, parameters=[ORG.Person],
@@ -499,7 +618,15 @@ def get_pmanager_stakeholders(uid, **kwargs):
 def get_pmanager_swarchitects(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_pmanager_roles(uid, args, 'softwarearchitect', flag_total)
+    return args, get_pmanager_roles(uid, args, 'softwarearchitect', flag_total)
+
+
+@app.metric('/total-pmanager-swdevelopers', parameters=[ORG.Person],
+            id='pmanager-swdevelopers', title='Software Developers of Product Manager')
+def get_total_pmanager_swdevelopers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_pmanager_roles(uid, args, 'softwaredeveloper', flag_total))]
 
 
 @app.view('/pmanager-swdevelopers', target=ORG.Person, parameters=[ORG.Person],
@@ -507,7 +634,15 @@ def get_pmanager_swarchitects(uid, **kwargs):
 def get_pmanager_swdevelopers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_pmanager_roles(uid, args, 'softwaredeveloper', flag_total)
+    return args, get_pmanager_roles(uid, args, 'softwaredeveloper', flag_total)
+
+
+@app.metric('/total-pmanager-pjmanagers', parameters=[ORG.Person],
+          id='pmanager-pjmanagers', title='Project Managers of Product Manager')
+def get_total_pmanager_pjmanagers(uid, **kwargs):
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    return args, [len(get_pmanager_roles(uid, args, 'projectmanager', flag_total))]
 
 
 @app.view('/pmanager-pjmanagers', target=ORG.Person, parameters=[ORG.Person],
@@ -515,7 +650,39 @@ def get_pmanager_swdevelopers(uid, **kwargs):
 def get_pmanager_pjmanagers(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_pmanager_roles(uid, args, 'projectmanager', flag_total)
+    return args, get_pmanager_roles(uid, args, 'projectmanager', flag_total)
+
+
+@app.metric('/total-pmanager-members', parameters=[ORG.Person],
+            id='pmanager-members', title='Members below Product Manager')
+def get_total_pmanager_members(uid, **kwargs):
+    res = {}
+    co, ar = helper_get_pmanager_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'productmanagers', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    return co, [len(res.keys())]
+
+
+@app.metric('/pmanager-productmembers', parameters=[ORG.Person],
+            id='pmanager-productmembers', title='Product Members AVG of Product Manager')
+def get_avg_pmanager_productmembers(uid, **kwargs):
+
+    res = {}
+    co, ar = helper_get_pmanager_architects(uid, **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in ar]
+    co, dev = helper_get_position_developers(uid, 'productmanagers', **kwargs)
+    [res.update({x.get('id'): x.get('uri')}) for x in dev]
+    res_mem = len(res.keys())
+
+    flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
+    args = get_correct_kwargs(kwargs)
+    res_pr = len(get_position_products(uid, args, 'productmanagers', flag_total))
+
+    if res_pr == 0:
+        return co, [0]
+
+    return co, [float(res_mem) / float(res_pr)]
 
 
 @app.view('/pmanager-members', target=ORG.Person, parameters=[ORG.Person],
