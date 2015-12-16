@@ -729,7 +729,12 @@ def get_avg_director_projectrepositories(uid, **kwargs):
 def get_director_activity(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_position_metric(uid, 'sum-product-activity', 'directors', 'sum', args, flag_total)
+    co, res = get_external_position_metric(uid, 'sum-product-activity', 'directors', 'sum', args, flag_total)
+    res_makeup = []
+    if len(res):
+        res_max = max(res)
+        [res_makeup.append(float(x)/res_max) for x in res]
+    return co, res_makeup
 
 
 @app.metric('/director-quality', aggr='avg', parameters=[ORG.Person],
@@ -968,7 +973,12 @@ def get_pmanager_members(uid, **kwargs):
 def get_pmanager_activity(uid, **kwargs):
     flag_total = kwargs.get('begin') is None and kwargs.get('end') is None
     args = get_correct_kwargs(kwargs)
-    return get_external_position_metric(uid, 'sum-product-activity', 'productmanagers', 'sum', args, flag_total)
+    co, res = get_external_position_metric(uid, 'sum-product-activity', 'productmanagers', 'sum', args, flag_total)
+    res_makeup = []
+    if len(res):
+        res_max = max(res)
+        [res_makeup.append(float(x)/res_max) for x in res]
+    return co, res_makeup
 
 
 @app.metric('/pmanager-quality', aggr='avg', parameters=[ORG.Person],
