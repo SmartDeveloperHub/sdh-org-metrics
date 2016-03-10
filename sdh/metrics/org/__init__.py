@@ -142,9 +142,10 @@ def add_repository((r, _, rid)):
 @st.collect('?r doap:name ?name')
 def add_repository_name((r, _, name)):
     prj = st.db.hget('tmp-rep', name.toPython())
-    st.db.hdel('tmp-rep', name)
-    st.execute('hset', r, "name", name)
-    st.execute('sadd', prj + ':r:', r)
+    if prj is not None:
+	    st.db.hdel('tmp-rep', name)
+	    st.execute('hset', r, "name", name)
+	    st.execute('sadd', prj + ':r:', r)
 
 
 @st.collect('?r scm:firstCommit ?fc')
