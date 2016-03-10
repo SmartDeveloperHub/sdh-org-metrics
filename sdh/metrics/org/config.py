@@ -34,18 +34,18 @@ def _api_port():
 
 def _redis_conf(def_host, def_db, def_port):
     return {'host': os.environ.get('DB_HOST', def_host),
-            'db': os.environ.get('DB_DB', def_db),
-            'port': os.environ.get('DB_PORT', def_port)}
+            'db': int(os.environ.get('DB_DB', def_db)),
+            'port': int(os.environ.get('DB_PORT', def_port))}
 
 
 def _agora_conf(def_host, def_port):
     return {'agora_host': os.environ.get('AGORA_HOST', def_host),
-            'agora_port': os.environ.get('AGORA_PORT', def_port)}
+            'agora_port': int(os.environ.get('AGORA_PORT', def_port))}
 
 
 def _broker_conf(def_host, def_port):
     return {'broker_host': os.environ.get('BROKER_HOST', def_host),
-            'broker_port': os.environ.get('BROKER_PORT', def_port)}
+            'broker_port': int(os.environ.get('BROKER_PORT', def_port))}
 
 
 class Config(object):
