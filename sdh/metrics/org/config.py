@@ -48,6 +48,14 @@ def _broker_conf(def_host, def_port):
             'broker_port': int(os.environ.get('BROKER_PORT', def_port))}
 
 
+def _stoa_conf(def_exchange, def_topic_pattern, def_response_prefix):
+    return {
+        'exchange': os.environ.get('EXCHANGE', def_exchange),
+        'topic_pattern': os.environ.get('TOPIC_PATTERN', def_topic_pattern),
+        'response_prefix': os.environ.get('RESPONSE_PREFIX', def_response_prefix)
+    }
+
+
 class Config(object):
     PORT = _api_port()
 
@@ -57,6 +65,7 @@ class DevelopmentConfig(Config):
     LOG = logging.DEBUG
     PROVIDER = _broker_conf('localhost', 5672)
     PROVIDER.update(_agora_conf('localhost', 9009))
+    PROVIDER.update(_stoa_conf('sdh', 'scholar.request', 'scholar.response'))
     REDIS = _redis_conf('localhost', 7, 6379)
 
 
@@ -65,4 +74,5 @@ class ProductionConfig(Config):
     LOG = logging.DEBUG
     PROVIDER = _broker_conf('localhost', 5672)
     PROVIDER.update(_agora_conf('localhost', 9009))
+    PROVIDER.update(_stoa_conf('sdh', 'scholar.request', 'scholar.response'))
     REDIS = _redis_conf('localhost', 7, 6379)
